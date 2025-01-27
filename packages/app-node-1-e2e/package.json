@@ -1,0 +1,27 @@
+{
+  "name": "@caca2/app-node-1-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "name": "app-node-1-e2e",
+    "projectType": "application",
+    "implicitDependencies": [
+      "app-node-1"
+    ],
+    "targets": {
+      "e2e": {
+        "executor": "@nx/jest:jest",
+        "outputs": [
+          "{workspaceRoot}/coverage/{e2eProjectRoot}"
+        ],
+        "options": {
+          "jestConfig": "packages/app-node-1-e2e/jest.config.ts",
+          "passWithNoTests": true
+        },
+        "dependsOn": [
+          "app-node-1:build"
+        ]
+      }
+    }
+  }
+}

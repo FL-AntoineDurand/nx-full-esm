@@ -2,5 +2,27 @@
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "files": [],
-  "references": []
+  "references": [
+    {
+      "path": "./packages/app-node-1-e2e"
+    },
+    {
+      "path": "./packages/app-node-1"
+    },
+    {
+      "path": "./packages/lib-node-lvl-1"
+    },
+    {
+      "path": "./packages/lib-node-lvl-2"
+    },
+    {
+      "path": "./packages/lib-react-lvl-1"
+    },
+    {
+      "path": "./packages/lib-react-lvl-2"
+    },
+    {
+      "path": "./packages/app-react-1"
+    }
+  ]
 }
