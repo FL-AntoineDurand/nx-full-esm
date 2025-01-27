@@ -8,7 +8,7 @@
     "moduleResolution": "nodenext",
     "tsBuildInfoFile": "out-tsc/app-node-1/tsconfig.app.tsbuildinfo"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.mts"],
   "exclude": [
     "out-tsc",
     "dist",
@@ -18,5 +18,13 @@
     "eslint.config.js",
     "eslint.config.cjs",
     "eslint.config.mjs"
+  ],
+  "references": [
+    {
+      "path": "../lib-react-lvl-1/tsconfig.lib.json"
+    },
+    {
+      "path": "../lib-node-lvl-1/tsconfig.lib.json"
+    }
   ]
 }
