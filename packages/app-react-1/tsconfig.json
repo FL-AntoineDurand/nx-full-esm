@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../lib-react-lvl-1"
+    },
+    {
       "path": "./tsconfig.app.json"
     }
   ],

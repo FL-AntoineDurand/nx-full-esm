@@ -8,4 +8,6 @@ export function LibReactLvl2() {
   );
 }
 
+export const libReactLvl2 = () => 'libReactLvl2';
+
 export default LibReactLvl2;

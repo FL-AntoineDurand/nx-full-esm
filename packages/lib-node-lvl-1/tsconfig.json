@@ -4,6 +4,12 @@
   "include": [],
   "references": [
     {
+      "path": "../lib-react-lvl-2"
+    },
+    {
+      "path": "../lib-node-lvl-2"
+    },
+    {
       "path": "./tsconfig.lib.json"
     },
     {
