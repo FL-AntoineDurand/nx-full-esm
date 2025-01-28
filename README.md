@@ -1,109 +1,294 @@
-# Caca2
+# NX Full ESM
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+The aims of this repo is to setup a nx monorepo for react and node apps and libs, with storybook and tailwind if necesary, all producing ESM format and able to import common code from react to node apps and libs, and vice versa.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+# How to
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
-
-## Generate a library
-
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
+```shell
+npx create-nx-workspace
+cd monorepo
 ```
 
-## Run tasks
+## React lib
 
-To build the library use:
-
-```sh
-npx nx build pkg1
+```shell
+npm install --save-dev @nx/react
+npx nx g @nx/react:lib packages/{LIB_NAME} --linter eslint --bundler vite --style scss --unitTestRunner jest
+npx nx run {LIB_NAME}:build
 ```
 
-To run any task with Nx use:
+## node lib
 
-```sh
-npx nx <target> <project-name>
+```shell
+npm install -D @nx/node
+npx nx g @nx/node:lib packages/{LIB_NAME} --buildable --linter eslint --unitTestRunner jest
+npx nx run {LIB_NAME}:build
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+add compilerOptions in {LIB_NAME}/tsconfig.lib.json
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Versioning and releasing
-
-To version and release the library use
-
-```
-npx nx release
-```
-
-Pass `--dry-run` to see what would happen without actually releasing the library.
-
-[Learn more about Nx release &raquo;](hhttps://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Keep TypeScript project references up to date
-
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
-
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
-
-```sh
-npx nx sync
+```json
+{
+  "compilerOptions": {
+    "module": "ESNext", // Change from default (CommonJS) to ES module output
+    "moduleResolution": "Node" // Use Node-style resolution for ES modules
+  }
+}
 ```
 
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
+## react app
 
-```sh
-npx nx sync:check
+```shell
+npx nx g @nx/react:app packages/{APP_NAME} --style scss --bundler vite --linter eslint
+npx nx run {APP_NAME}:build
+npx nx run {APP_NAME}:serve
 ```
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+## app node
 
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
+```shell
+npx nx g @nx/node:app  packages/{APP_NAME} --linter eslint --e2eTestRunner jest --framework none --unitTestRunner jest
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+Rename all .ts file to .mts
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Use **.mjs** extension in relative local import
 
-### Step 2
+In packages/_{APP_NAME}_/**package.json** :
 
-Use the following command to configure a CI workflow for your workspace:
+- add type: **module**
+- change **outExtension** from .js to **.mjs**
+- (optional) set **bundle** to true and **thirdParty** to true
+- set react and react-dom as **external** to not bundle them when importing a lib that use jsx
+- change main path from **.ts** to **.mts**
+- set **runBuildTargetDependencies** in **serve** target to force recompilation on file changes
 
-```sh
-npx nx g ci-workflow
+```json
+{
+  "type": "module",
+  "nx": {
+    "targets": {
+      "build": {
+        "options": {
+          "format": ["esm"],
+          "bundle": true,
+          "thirdParty": true,
+          "external": ["react", "react-dom"],
+          "main": "packages/app-node-1/src/main.mts",
+          "esbuildOptions": {
+            "outExtension": {
+              ".js": ".mjs"
+            }
+          }
+        },
+        "configurations": {
+          "production": {
+            "esbuildOptions": {
+              "outExtension": {
+                ".js": ".mjs"
+              }
+            }
+          }
+        }
+      },
+      "serve": {
+        "options": {
+          "runBuildTargetDependencies": true
+        }
+      }
+    }
+  }
+}
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+In packages/_{APP_NAME}_/**tsconfig.app.json** : Add **.mts** to **include** array
 
-## Install Nx Console
+```json
+{
+  "include": ["src/**/*.ts", "src/**/*.mts"]
+}
+```
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+## storybook
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```shell
+npm install --save-dev @nx/storybook
+npx nx g @nx/react:storybook-configuration {LIB_NAME}
+```
 
-## Useful links
+## tailwind
 
-Learn more:
+```
+npm install -D tailwindcss@3.4.17 autoprefixer postcss
+```
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### create tailwind.config.js, postcss.config.js
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```
+# in monorepo root
+npx tailwindcss init -p
+```
+
+edit tailwind.config.js
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+
+edit postcss.config.js
+
+```javascript
+const { join } = require('path');
+
+module.exports = {
+  plugins: {
+    tailwindcss: {
+      config: join(__dirname, 'tailwind.config.js'),
+    },
+    autoprefixer: {},
+  },
+};
+```
+
+Create a scss file that import tailwind styles
+
+packages/_{LIB_NAME}_/src/lib/**index.scss** :
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+Import it from **index.ts**
+
+packages/_{LIB_NAME}_/src/**index.ts** :
+
+```typescript
+import './lib/index.scss';
+
+// ...
+// export { ... } from ...
+```
+
+In package.json, declare style and export the resulting compiled css file
+
+packages/_{LIB_NAME}_/**package.json** :
+
+```json
+{
+  "style": "./dist/style.css",
+  "exports": {
+    "./style": "./dist/style.css"
+  }
+}
+```
+
+In the app using the react lib, import the lib styles
+
+packages/_{APP_NAME}_/src/**main.tsx** :
+
+```typescript
+import '@monorepo/{LIB_NAME}/style';
+```
+
+### setup storybook
+
+If necessary, create a storybook global wrapper for adding contexts and mock
+
+packages/_{LIB_NAME}_/.storybook/**global-wrapper.tsx** :
+
+```typescript
+// add common wrapper, mock context etc in this component
+export const GlobalWrapper = (Story: any) => <Story />;
+```
+
+Import the **index.scss** (containing tailwind styles) file from **preview.ts**
+
+packages/_{LIB_NAME}_/.storybook/**preview.ts** :
+
+```typescript
+import type { Preview } from '@storybook/react';
+import { GlobalWrapper } from './global-wrapper';
+
+import '../src/lib/index.scss';
+
+const preview: Preview = {
+  parameters: {
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/,
+      },
+    },
+    backgrounds: {
+      default: 'dark',
+      values: [
+        {
+          name: 'dark',
+          value: '#222',
+        },
+      ],
+    },
+  },
+  decorators: [GlobalWrapper],
+  tags: [],
+};
+
+export default preview;
+```
+
+## json
+
+add **"resolveJsonModule": true** in compilerOptions on **tsconfig.app.json** or **tsconfig.lib.json**
+
+```json
+{
+  "compilerOptions": {
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.json"]
+}
+```
+
+## Others Actions
+
+### Rename lib
+
+```shell
+nx g @nrwl/workspace:mv --project ganymede-types --destination demiurge-types
+```
+
+### Delete remove
+
+```shell
+nx g remove three-flow
+```
+
+### Update everything
+
+```shell
+# upgrade nodejs
+# remove package.json: overrides: {}
+npm install -g npm@latest
+nx migrate latest
+nx migrate --run-migrations
+npm install --global npm-check-updates@latest
+npm-check-updates
+npm install xxxxx@X.Y.Z
+npm audit
+# package.json: overrides: {}
+```
+
+### Run NX monorepo jest tests
+
+```shell
+npx nx run-many --all --target=test --parallel
+```
