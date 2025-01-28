@@ -6,7 +6,7 @@ import styles from './lib-react-lvl-1.module.scss';
 
 export function LibReactLvl1() {
   return (
-    <div className={styles['container']}>
+    <div className={`${styles['container']} bg-blue-500`}>
       <h1>Welcome to LibReactLvl1!</h1>
       <LibReactLvl2 />
       <p>{libNodeLvl2()}</p>
