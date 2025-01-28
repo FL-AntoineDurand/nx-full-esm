@@ -22,6 +22,10 @@
           ],
           "bundle": true,
           "thirdParty": true,
+          "external": [
+            "react",
+            "react-dom"
+          ],
           "main": "packages/app-node-1/src/main.mts",
           "tsConfig": "packages/app-node-1/tsconfig.app.json",
           "assets": [
