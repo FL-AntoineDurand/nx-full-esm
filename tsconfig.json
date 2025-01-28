@@ -24,5 +24,10 @@
     {
       "path": "./packages/app-react-1"
     }
-  ]
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
 }
