@@ -58,7 +58,7 @@
         ],
         "options": {
           "buildTarget": "app-node-1:build",
-          "runBuildTargetDependencies": false
+          "runBuildTargetDependencies": true
         },
         "configurations": {
           "development": {
